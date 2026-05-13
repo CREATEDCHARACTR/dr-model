@@ -30,6 +30,19 @@ bench-by-execution compare \
   --models anthropic/claude-opus-4.7,anthropic/claude-haiku-4.5
 ```
 
+### Or: run an open-weight model on your laptop ($0/M)
+
+```bash
+ollama pull qwen3-coder:30b   # ~18GB, runs on a recent Mac / 24GB+ GPU
+
+bench-by-execution demo \
+  --model qwen3-coder:30b \
+  --base-url http://localhost:11434/v1 \
+  --out my_bench.json
+```
+
+The `--base-url` flag points the harness at any OpenAI-compatible server — Ollama, LM Studio, vLLM. No API key needed when it's local; the executor scorer runs the model's output the same way it runs Opus's, so the numbers are directly comparable. **This is how you reproduce the "open-weight ties $45/M closed-frontier" receipt on your own machine.**
+
 Each task is run **twice**: once with a public-tier EXECUTION CONTRACT wrapping the prompt, once without. Both responses are scored two ways:
 
 | Scorer | What it measures | What industry uses |
@@ -129,7 +142,8 @@ The third file is the most important. It shows what the format scorer hides: **a
 | **2** | ✅ Shipped | `examples/` directory with three real sample bench JSONs showing the Format Scorer Trap on Opus, Haiku, and pre-heal Haiku |
 | **3** | ✅ Shipped | GitHub Actions CI (`.github/workflows/smoke.yml`) runs the offline smoke + parse-gates the CLI on every push, across Python 3.10/3.11/3.12 |
 | **4** | ✅ Shipped | This README's roadmap + sample-output narration. Methodology is now both *reproducible* and *explained*. |
-| 5+ | Open | Live multi-model batched runs from a single command. Sweep across the price curve in one shot. Per-task category benchmarks (CSV, parsing, search, async). PRs welcome. |
+| **5** | ✅ Shipped | `--base-url` flag on `demo` + `compare` — point at any OpenAI-compatible server (Ollama, LM Studio, vLLM). Auth is auto-skipped for localhost. Open-weight models on your laptop become first-class participants in the bench; the laptop-ties-frontier receipt is now community-reproducible. |
+| 6+ | Open | Live multi-model batched runs from a single command. Sweep across the price curve in one shot. Per-task category benchmarks (CSV, parsing, search, async). PRs welcome. |
 
 ## License
 

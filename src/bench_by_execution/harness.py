@@ -124,12 +124,26 @@ class HarnessedClient:
         timeout_s: float = 360.0,
     ) -> None:
         self.model = model
-        self.api_key = api_key or os.environ.get("OPENROUTER_API_KEY")
+        self.base_url = base_url.rstrip("/")
+        # Auth resolution: explicit api_key wins; else fall back to env;
+        # else (e.g. local Ollama / LM Studio / vLLM at localhost) use a
+        # placeholder, since most OpenAI-compatible local servers accept
+        # any non-empty string as the API key.
+        self._is_local = any(
+            s in self.base_url
+            for s in ("localhost", "127.0.0.1", "0.0.0.0", ":11434")
+        )
+        self.api_key = (
+            api_key
+            or os.environ.get("OPENROUTER_API_KEY")
+            or ("ollama-local" if self._is_local else None)
+        )
         if not self.api_key:
             raise RuntimeError(
-                "No API key. Pass api_key= or set OPENROUTER_API_KEY in env."
+                "No API key. Pass api_key= or set OPENROUTER_API_KEY in env, "
+                "or point --base-url at a local Ollama (http://localhost:11434/v1) "
+                "for the open-weight arm."
             )
-        self.base_url = base_url.rstrip("/")
         self.contract = PUBLIC_CONTRACT if contract is None else contract
         self.max_tokens = max_tokens
         self.timeout_s = timeout_s

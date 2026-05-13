@@ -76,7 +76,11 @@ def cmd_demo(args: argparse.Namespace) -> int:
     """Run the public tasks against one model, both arms, print side-by-side."""
     tasks = PUBLIC_TASKS[:args.tasks] if args.tasks else PUBLIC_TASKS
 
-    client = HarnessedClient(model=args.model, api_key=args.api_key)
+    client = HarnessedClient(
+        model=args.model,
+        api_key=args.api_key,
+        base_url=getattr(args, "base_url", "https://openrouter.ai/api/v1"),
+    )
     # Phase 1: collect per-row results so we can persist via --out
     rows: List[dict] = []
 
@@ -235,7 +239,11 @@ def cmd_compare(args: argparse.Namespace) -> int:
     results = []
     for model in models:
         print(_c(f"Running {model}…", "dim"))
-        client = HarnessedClient(model=model, api_key=args.api_key)
+        client = HarnessedClient(
+            model=model,
+            api_key=args.api_key,
+            base_url=getattr(args, "base_url", "https://openrouter.ai/api/v1"),
+        )
         h_scores: List[int] = []
         u_scores: List[int] = []
         cost = 0.0
@@ -312,7 +320,15 @@ def main(argv: Optional[List[str]] = None) -> int:
     p_demo.add_argument("--tasks", type=int, default=None,
                         help="Number of tasks to run (default: all 5)")
     p_demo.add_argument("--api-key", default=None,
-                        help="OpenRouter API key (default: $OPENROUTER_API_KEY)")
+                        help="OpenRouter API key (default: $OPENROUTER_API_KEY). "
+                             "Skipped automatically when --base-url points at a "
+                             "local Ollama / LM Studio / vLLM server.")
+    p_demo.add_argument("--base-url", default="https://openrouter.ai/api/v1",
+                        help="API base URL. Default: OpenRouter. For local "
+                             "Ollama use http://localhost:11434/v1 — then any "
+                             "model you've pulled (e.g. qwen3-coder:30b) becomes "
+                             "a valid --model value, scored under the same "
+                             "EXECUTION CONTRACT against the same task pool.")
     p_demo.set_defaults(func=cmd_demo)
 
     p_cmp = sub.add_parser("compare", help="Run multiple models side-by-side")
@@ -320,6 +336,9 @@ def main(argv: Optional[List[str]] = None) -> int:
                        help="Comma-separated list of model slugs")
     p_cmp.add_argument("--tasks", type=int, default=None)
     p_cmp.add_argument("--api-key", default=None)
+    p_cmp.add_argument("--base-url", default="https://openrouter.ai/api/v1",
+                       help="API base URL (default OpenRouter). For local "
+                            "Ollama: http://localhost:11434/v1")
     p_cmp.set_defaults(func=cmd_compare)
 
     args = parser.parse_args(argv)
