@@ -58,11 +58,27 @@ def _format_cost(cost: Optional[float]) -> str:
 # demo command
 # ─────────────────────────────────────────────────────────────────
 
+def _save_bench_json(out_path: str, payload: dict) -> None:
+    """Persist a bench run to JSON. Schema matches dual-delta-reporter
+    consumers: top-level {timestamp_iso, model, tasks, results, summary}.
+
+    Phase 1 of dr-model: bench results are now auditable + replayable.
+    Without this, every demo run printed and vanished — the
+    Format Scorer Trap evidence was ephemeral.
+    """
+    from pathlib import Path
+    p = Path(out_path).expanduser()
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_text(json.dumps(payload, indent=2, default=str))
+
+
 def cmd_demo(args: argparse.Namespace) -> int:
     """Run the public tasks against one model, both arms, print side-by-side."""
     tasks = PUBLIC_TASKS[:args.tasks] if args.tasks else PUBLIC_TASKS
 
     client = HarnessedClient(model=args.model, api_key=args.api_key)
+    # Phase 1: collect per-row results so we can persist via --out
+    rows: List[dict] = []
 
     print()
     print(_c("═" * 72, "dim"))
@@ -128,6 +144,28 @@ def cmd_demo(args: argparse.Namespace) -> int:
         u_fmt_scores.append(u_fmt["score_pct"])
         if u_resp.cost_usd:
             total_cost += u_resp.cost_usd
+        # Phase 1: per-row record for persistence
+        rows.append({
+            "task_id":   task_id,
+            "harnessed": {
+                "exec_score":   h_exec.score,
+                "exec_reason":  h_exec.reason,
+                "format_score": h_fmt["score_pct"],
+                "files_found":  h_fmt.get("files_found", []),
+                "raw_text":     getattr(h_resp, "text", "") or "",
+                "cost_usd":     getattr(h_resp, "cost_usd", None),
+                "error":        getattr(h_resp, "error", None),
+            },
+            "unharnessed": {
+                "exec_score":   u_exec.score,
+                "exec_reason":  u_exec.reason,
+                "format_score": u_fmt["score_pct"],
+                "files_found":  u_fmt.get("files_found", []),
+                "raw_text":     getattr(u_resp, "text", "") or "",
+                "cost_usd":     getattr(u_resp, "cost_usd", None),
+                "error":        getattr(u_resp, "error", None),
+            },
+        })
         print()
 
     # Summary
@@ -153,6 +191,28 @@ def cmd_demo(args: argparse.Namespace) -> int:
     print(_c("  Executor-score lift = harness teaches actual problem-solving.", "dim"))
     print(_c("  Industry benchmarks measure the first; the second is what matters.", "dim"))
     print()
+
+    # Phase 1: persist if --out provided
+    if getattr(args, "out", None):
+        import time as _time
+        payload = {
+            "timestamp_iso": _time.strftime("%Y-%m-%dT%H:%M:%SZ", _time.gmtime()),
+            "model": args.model,
+            "n_tasks": n,
+            "results": rows,
+            "summary": {
+                "harnessed_exec_mean":    h_exec_mean,
+                "unharnessed_exec_mean":  u_exec_mean,
+                "harnessed_format_mean":  h_fmt_mean,
+                "unharnessed_format_mean": u_fmt_mean,
+                "delta_exec":             h_exec_mean - u_exec_mean,
+                "delta_format":           h_fmt_mean - u_fmt_mean,
+                "total_cost_usd":         total_cost,
+            },
+        }
+        _save_bench_json(args.out, payload)
+        print(_c(f"  → saved bench JSON to {args.out}", "dim"))
+        print()
 
     return 0
 
@@ -244,6 +304,9 @@ def main(argv: Optional[List[str]] = None) -> int:
     sub = parser.add_subparsers(dest="cmd", required=True)
 
     p_demo = sub.add_parser("demo", help="Run public tasks against one model, both arms")
+    p_demo.add_argument("--out", default=None,
+                          help="Path to save bench JSON (per-row results + summary). "
+                               "Without this, the run prints + vanishes.")
     p_demo.add_argument("--model", required=True,
                         help="Provider-prefixed model slug (e.g. anthropic/claude-haiku-4.5)")
     p_demo.add_argument("--tasks", type=int, default=None,

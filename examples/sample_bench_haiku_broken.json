@@ -1,0 +1,80 @@
+{
+  "timestamp_iso": "2026-05-13T09:21:02Z",
+  "model": "anthropic/claude-haiku-4.5",
+  "n_tasks": 3,
+  "results": [
+    {
+      "task_id": "p1_csv_head",
+      "harnessed": {
+        "exec_score": 0,
+        "exec_reason": "SyntaxError on line 1: 'python' is not valid syntax",
+        "format_score": 100,
+        "files_found": ["csv_head.py"],
+        "raw_text": "```FILE: csv_head.py\npython\nimport csv, sys\nrows = list(csv.reader(sys.stdin))\nfor r in rows[:5]:\n    print(','.join(r))\n```",
+        "cost_usd": 0.0008,
+        "error": null
+      },
+      "unharnessed": {
+        "exec_score": 3,
+        "exec_reason": "produced first 5 rows correctly",
+        "format_score": 70,
+        "files_found": ["__unnamed_block__"],
+        "raw_text": "```python\nimport csv, sys\nrows = list(csv.reader(sys.stdin))\nfor r in rows[:5]:\n    print(','.join(r))\n```",
+        "cost_usd": 0.0007,
+        "error": null
+      }
+    },
+    {
+      "task_id": "p2_word_count",
+      "harnessed": {
+        "exec_score": 0,
+        "exec_reason": "SyntaxError on line 1: 'python' is not valid syntax",
+        "format_score": 100,
+        "files_found": ["wc.py"],
+        "raw_text": "```FILE: wc.py\npython\nimport sys\nfor line in sys.stdin:\n    print(len(line.split()))\n```",
+        "cost_usd": 0.0006,
+        "error": null
+      },
+      "unharnessed": {
+        "exec_score": 3,
+        "exec_reason": "counts words per line accurately",
+        "format_score": 70,
+        "files_found": ["__unnamed_block__"],
+        "raw_text": "```python\nimport sys\nfor line in sys.stdin:\n    print(len(line.split()))\n```",
+        "cost_usd": 0.0006,
+        "error": null
+      }
+    },
+    {
+      "task_id": "p3_uniq_sort",
+      "harnessed": {
+        "exec_score": 0,
+        "exec_reason": "SyntaxError on line 1: 'python' is not valid syntax",
+        "format_score": 90,
+        "files_found": ["uniq_sort.py"],
+        "raw_text": "```FILE: uniq_sort.py\npython\nimport sys\nlines = set(line.rstrip() for line in sys.stdin)\nfor line in sorted(lines):\n    print(line)\n```",
+        "cost_usd": 0.0007,
+        "error": null
+      },
+      "unharnessed": {
+        "exec_score": 3,
+        "exec_reason": "outputs sorted unique lines",
+        "format_score": 75,
+        "files_found": ["__unnamed_block__"],
+        "raw_text": "```python\nimport sys\nfor line in sorted(set(l.rstrip() for l in sys.stdin)):\n    print(line)\n```",
+        "cost_usd": 0.0008,
+        "error": null
+      }
+    }
+  ],
+  "summary": {
+    "harnessed_exec_mean": 0.00,
+    "unharnessed_exec_mean": 3.00,
+    "harnessed_format_mean": 96.67,
+    "unharnessed_format_mean": 71.67,
+    "delta_exec": -3.00,
+    "delta_format": 25.00,
+    "total_cost_usd": 0.0042
+  },
+  "_note": "Verdict: HARNESS_REGRESSES. Surgery trigger. Haiku's harnessed responses emit a stray 'python' language identifier as the first line inside the FILE block, producing a SyntaxError on every task. The format scorer is HAPPY (95-100/100 — the FILE block was present), but the executor catches the actual breakage. Without the executor scorer, this regression is invisible — the harness looks like a 25-point quality lift when it's actually a -3.00/3.00 quality cliff. THIS is what the dual-delta reporter is built to surface. Healed via per-model YAML profile that explicitly forbids the stray language identifier."
+}

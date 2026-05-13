@@ -1,0 +1,41 @@
+name: smoke
+
+# Phase 3 of dr-model: CI runs the smoke test on every push + PR.
+# No external API calls — pure offline executor + format-scorer
+# correctness. The bench harness against live models needs an
+# OPENROUTER_API_KEY which we do not embed in CI.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install package
+        run: pip install -e .
+
+      - name: Run smoke tests
+        run: python3 tests/test_smoke.py
+
+      - name: Parse-gate CLI module
+        run: python3 -c "import bench_by_execution.cli, bench_by_execution.harness, bench_by_execution.executor, bench_by_execution.contract; print('all modules import')"
+
+      - name: CLI help renders without error
+        run: bench-by-execution --help
+
+      - name: Demo subcommand --help renders
+        run: bench-by-execution demo --help

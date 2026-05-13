@@ -1,0 +1,80 @@
+{
+  "timestamp_iso": "2026-05-13T03:02:40Z",
+  "model": "anthropic/claude-opus-4.7",
+  "n_tasks": 3,
+  "results": [
+    {
+      "task_id": "p1_csv_head",
+      "harnessed": {
+        "exec_score": 3,
+        "exec_reason": "produced first 5 rows correctly",
+        "format_score": 100,
+        "files_found": ["csv_head.py"],
+        "raw_text": "```FILE: csv_head.py\nimport csv, sys\nfor i, row in enumerate(csv.reader(sys.stdin)):\n    if i >= 5:\n        break\n    print(','.join(row))\n```",
+        "cost_usd": 0.018,
+        "error": null
+      },
+      "unharnessed": {
+        "exec_score": 3,
+        "exec_reason": "produced first 5 rows correctly",
+        "format_score": 65,
+        "files_found": ["__unnamed_block__"],
+        "raw_text": "Here's a Python solution that reads CSV from stdin and prints the first 5 rows:\n\n```python\nimport csv\nimport sys\n\nreader = csv.reader(sys.stdin)\nfor i, row in enumerate(reader):\n    if i >= 5:\n        break\n    print(','.join(row))\n```\n\nThis uses the standard csv module to handle quoted fields correctly.",
+        "cost_usd": 0.022,
+        "error": null
+      }
+    },
+    {
+      "task_id": "p2_word_count",
+      "harnessed": {
+        "exec_score": 3,
+        "exec_reason": "counts words per line accurately",
+        "format_score": 100,
+        "files_found": ["wc.py"],
+        "raw_text": "```FILE: wc.py\nimport sys\nfor line in sys.stdin:\n    print(len(line.split()))\n```",
+        "cost_usd": 0.014,
+        "error": null
+      },
+      "unharnessed": {
+        "exec_score": 3,
+        "exec_reason": "counts words per line accurately",
+        "format_score": 65,
+        "files_found": ["__unnamed_block__"],
+        "raw_text": "I'll count words per line using sys.stdin:\n\n```python\nimport sys\n\nfor line in sys.stdin:\n    words = line.split()\n    print(len(words))\n```",
+        "cost_usd": 0.017,
+        "error": null
+      }
+    },
+    {
+      "task_id": "p3_uniq_sort",
+      "harnessed": {
+        "exec_score": 3,
+        "exec_reason": "outputs sorted unique lines",
+        "format_score": 100,
+        "files_found": ["uniq_sort.py"],
+        "raw_text": "```FILE: uniq_sort.py\nimport sys\nseen = set()\nfor line in sys.stdin:\n    seen.add(line.rstrip())\nfor line in sorted(seen):\n    print(line)\n```",
+        "cost_usd": 0.015,
+        "error": null
+      },
+      "unharnessed": {
+        "exec_score": 3,
+        "exec_reason": "outputs sorted unique lines",
+        "format_score": 65,
+        "files_found": ["__unnamed_block__"],
+        "raw_text": "Here's a solution that deduplicates and sorts:\n\n```python\nimport sys\n\nlines = set()\nfor line in sys.stdin:\n    lines.add(line.rstrip())\n\nfor line in sorted(lines):\n    print(line)\n```\n\nUsing a set for O(1) dedup and then sorting the unique values.",
+        "cost_usd": 0.019,
+        "error": null
+      }
+    }
+  ],
+  "summary": {
+    "harnessed_exec_mean": 3.00,
+    "unharnessed_exec_mean": 3.00,
+    "harnessed_format_mean": 100.0,
+    "unharnessed_format_mean": 65.0,
+    "delta_exec": 0.00,
+    "delta_format": 35.0,
+    "total_cost_usd": 0.105
+  },
+  "_note": "Verdict: FORMAT_ONLY at a premium price. Opus 4.7 produces identical executable code in BOTH arms (exec_mean 3.00/3.00 either way). The harness lift of +35 format-points is pure substrate-parsability tax — it does not improve problem-solving capability. The unharnessed arm uses more tokens (preambles, explanations) but solves the task equally well. Per D-CONTRACT-TEACHES-FORMAT-COMPLIANCE-NOT-QUALITY, this is the doctrine working as predicted at the top of the model price curve."
+}

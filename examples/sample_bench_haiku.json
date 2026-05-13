@@ -1,0 +1,80 @@
+{
+  "timestamp_iso": "2026-05-13T13:38:00Z",
+  "model": "anthropic/claude-haiku-4.5",
+  "n_tasks": 3,
+  "results": [
+    {
+      "task_id": "p1_csv_head",
+      "harnessed": {
+        "exec_score": 3,
+        "exec_reason": "produced first 5 rows correctly",
+        "format_score": 95,
+        "files_found": ["csv_head.py"],
+        "raw_text": "```FILE: csv_head.py\nimport csv, sys\nrows = list(csv.reader(sys.stdin))\nfor r in rows[:5]:\n    print(','.join(r))\n```",
+        "cost_usd": 0.0008,
+        "error": null
+      },
+      "unharnessed": {
+        "exec_score": 3,
+        "exec_reason": "produced first 5 rows correctly",
+        "format_score": 70,
+        "files_found": ["__unnamed_block__"],
+        "raw_text": "Here's a Python script:\n\n```python\nimport csv, sys\nrows = list(csv.reader(sys.stdin))\nfor r in rows[:5]:\n    print(','.join(r))\n```",
+        "cost_usd": 0.0007,
+        "error": null
+      }
+    },
+    {
+      "task_id": "p2_word_count",
+      "harnessed": {
+        "exec_score": 3,
+        "exec_reason": "counts words per line accurately",
+        "format_score": 100,
+        "files_found": ["wc.py"],
+        "raw_text": "```FILE: wc.py\nimport sys\nfor line in sys.stdin:\n    print(len(line.split()))\n```",
+        "cost_usd": 0.0006,
+        "error": null
+      },
+      "unharnessed": {
+        "exec_score": 3,
+        "exec_reason": "counts words per line accurately",
+        "format_score": 80,
+        "files_found": ["__unnamed_block__"],
+        "raw_text": "```python\nimport sys\nfor line in sys.stdin:\n    print(len(line.split()))\n```",
+        "cost_usd": 0.0006,
+        "error": null
+      }
+    },
+    {
+      "task_id": "p3_uniq_sort",
+      "harnessed": {
+        "exec_score": 3,
+        "exec_reason": "outputs sorted unique lines",
+        "format_score": 95,
+        "files_found": ["uniq_sort.py"],
+        "raw_text": "```FILE: uniq_sort.py\nimport sys\nlines = set(line.rstrip() for line in sys.stdin)\nfor line in sorted(lines):\n    print(line)\n```",
+        "cost_usd": 0.0007,
+        "error": null
+      },
+      "unharnessed": {
+        "exec_score": 3,
+        "exec_reason": "outputs sorted unique lines",
+        "format_score": 75,
+        "files_found": ["__unnamed_block__"],
+        "raw_text": "I'll write a script:\n\n```python\nimport sys\nfor line in sorted(set(l.rstrip() for l in sys.stdin)):\n    print(line)\n```\n\nThat handles deduplication and sorting.",
+        "cost_usd": 0.0008,
+        "error": null
+      }
+    }
+  ],
+  "summary": {
+    "harnessed_exec_mean": 3.00,
+    "unharnessed_exec_mean": 3.00,
+    "harnessed_format_mean": 96.67,
+    "unharnessed_format_mean": 75.00,
+    "delta_exec": 0.00,
+    "delta_format": 21.67,
+    "total_cost_usd": 0.0042
+  },
+  "_note": "Verdict: FORMAT_ONLY. Both arms produce identical executable code; harness only teaches the FILE-block format. Δformat is the cost of substrate parsability, not a quality lift. This is the doctrine D-CONTRACT-TEACHES-FORMAT-COMPLIANCE-NOT-QUALITY working as predicted."
+}

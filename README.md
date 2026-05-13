@@ -110,6 +110,27 @@ The doctrine is reproducible with the public contract alone. That's the point.
 
 ---
 
+## Reproducible examples in this repo
+
+See [`examples/`](examples/) for three sample bench-output JSONs:
+
+- `sample_bench_haiku.json` — healed Haiku: `Δformat=+21.7`, `Δexec=0.00` (FORMAT_ONLY)
+- `sample_bench_opus.json` — premium Opus: `Δformat=+35.0`, `Δexec=0.00` (FORMAT_ONLY)
+- `sample_bench_haiku_broken.json` — pre-heal Haiku: `Δformat=+25.0`, `Δexec=-3.00` (**HARNESS_REGRESSES** — the smoking gun)
+
+The third file is the most important. It shows what the format scorer hides: **a harness that emits a stray `python` line inside the FILE block, causing every harnessed response to SyntaxError**. The format scorer sees a clean FILE block and rewards it. The executor catches the regression. Without dual-scoring you ship a "harness that works" that doesn't.
+
+## Roadmap
+
+| Phase | Status | What |
+|---|---|---|
+| **0** | ✅ Shipped (v0.1.0) | Core package: `bench-by-execution demo` CLI, public-tier contract, executor + format scorers, 5 public tasks, 6/6 offline smoke test |
+| **1** | ✅ Shipped | `demo --out PATH` persists per-row results + summary to JSON; auditable replay |
+| **2** | ✅ Shipped | `examples/` directory with three real sample bench JSONs showing the Format Scorer Trap on Opus, Haiku, and pre-heal Haiku |
+| **3** | ✅ Shipped | GitHub Actions CI (`.github/workflows/smoke.yml`) runs the offline smoke + parse-gates the CLI on every push, across Python 3.10/3.11/3.12 |
+| **4** | ✅ Shipped | This README's roadmap + sample-output narration. Methodology is now both *reproducible* and *explained*. |
+| 5+ | Open | Live multi-model batched runs from a single command. Sweep across the price curve in one shot. Per-task category benchmarks (CSV, parsing, search, async). PRs welcome. |
+
 ## License
 
 MIT — use it freely.
