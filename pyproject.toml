@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bench-by-execution"
+version = "0.1.0"
+description = "Bench LLMs by running their code, not by checking if the output looks right. Exposes 'The Format Scorer Trap' — the hidden assumption in industry-standard benchmarks that lets cheaper models match premium ones once you measure problem-solving directly."
+readme = "README.md"
+authors = [
+    { name = "Dr Model — Local AI Open Heart Surgeon" }
+]
+license = { text = "MIT" }
+requires-python = ">=3.10"
+keywords = ["llm", "benchmark", "agent", "evaluation", "openrouter", "anthropic", "openai"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+]
+dependencies = []
+
+[project.scripts]
+bench-by-execution = "bench_by_execution.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/CREATEDCHARACTR/dr-model"
+Issues = "https://github.com/CREATEDCHARACTR/dr-model/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"bench_by_execution" = ["tasks/*.json"]
